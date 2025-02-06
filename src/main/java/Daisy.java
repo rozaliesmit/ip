@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class Daisy {
     public static void main(String[] args) {
         String logo = " ____        _        \n"
@@ -11,7 +13,19 @@ public class Daisy {
         System.out.println(" Hello! I'm Daisy");
         System.out.println(" What can I do for you?");
         System.out.println("____________________________________________________________");
+
+        Scanner scanner = new Scanner(System.in);
+        String input = "";
+        while (true){
+            input = scanner.nextLine();
+            if (input.equals("bye")){
+                break;
+            }
+            System.out.println(input);
+        }
+
         System.out.println(" Bye. Hope to see you again soon!");
         System.out.println("____________________________________________________________");
     }
 }
+
