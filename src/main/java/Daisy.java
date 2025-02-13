@@ -1,18 +1,14 @@
 import java.util.Scanner;
 
 public class Daisy {
+    // Maximum number of tasks
     private static final int MAX_ITEMS = 100;
     private static Task[] tasks = new Task[MAX_ITEMS];
     private static int taskCount = 0;
 
     public static void main(String[] args) {
-        String logo = " ____        _        \n"
-                + "|  _ \\ _   _| | _____ \n"
-                + "| | | | | | | |/ / _ \\\n"
-                + "| |_| | |_| |   <  __/\n"
-                + "|____/ \\__,_|_|\\_\\___|\n";
-
-        System.out.println("Hello from\n" + logo);
+        // Introduction message
+        System.out.println("Hello from\n");
         System.out.println("____________________________________________________________");
         System.out.println(" Hello! I'm Daisy");
         System.out.println(" What can I do for you?");
@@ -21,18 +17,24 @@ public class Daisy {
         Scanner scanner = new Scanner(System.in);
         String input = "";
 
+        // Respond to user commands
         while (true) {
             input = scanner.nextLine();
+            // End conversation
             if (input.equals("bye")) {
                 break;
+              // Display list
             } else if (input.equals("list")) {
                 listTasks();
-            } else if (input.equals("mark ")) {
+              // Mark task as done
+            } else if (input.startsWith("mark ")) {
                 int taskNumber = Integer.parseInt(input.split(" ")[1]);
                 markTask(taskNumber);
-            } else if (input.equals("unmark ")) {
+              // Unmark task
+            } else if (input.startsWith("unmark ")) {
                 int taskNumber = Integer.parseInt(input.split(" ")[1]);
                 unmarkTask(taskNumber);
+              // Add task to list
             } else {
                 addTask(input);
             }
@@ -44,6 +46,7 @@ public class Daisy {
         scanner.close();
     }
 
+    // Add task
     private static void addTask(String description) {
         if (taskCount < MAX_ITEMS) {
             tasks[taskCount] = new Task(description);
@@ -58,6 +61,7 @@ public class Daisy {
         }
     }
 
+    // List task
     private static void listTasks() {
         System.out.println("____________________________________________________________");
         System.out.println(" Here are the tasks in your list:");
@@ -67,6 +71,7 @@ public class Daisy {
         System.out.println("____________________________________________________________");
     }
 
+    // Mark task as done
     private static void markTask(int taskNumber) {
         if (taskNumber > 0 && taskNumber <= taskCount) {
             tasks[taskNumber - 1].markAsDone();
@@ -81,6 +86,7 @@ public class Daisy {
         }
     }
 
+    // Unmark task
     private static void unmarkTask(int taskNumber) {
         if (taskNumber > 0 && taskNumber <= taskCount) {
             tasks[taskNumber - 1].markAsNotDone();
