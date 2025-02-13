@@ -8,7 +8,6 @@ public class Daisy {
 
     public static void main(String[] args) {
         // Introduction message
-        System.out.println("Hello from\n");
         System.out.println("____________________________________________________________");
         System.out.println(" Hello! I'm Daisy");
         System.out.println(" What can I do for you?");
