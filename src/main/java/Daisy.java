@@ -23,23 +23,35 @@ public class Daisy {
             // End conversation
             if (input.equals("bye")) {
                 break;
-              // Display list
+                // Display list
             } else if (input.equals("list")) {
                 listTasks();
-              // Mark task as done
+                // Mark task as done
             } else if (input.startsWith("mark ")) {
                 int taskNumber = Integer.parseInt(input.split(" ")[1]);
                 markTask(taskNumber);
-              // Unmark task
+                // Unmark task
             } else if (input.startsWith("unmark ")) {
                 int taskNumber = Integer.parseInt(input.split(" ")[1]);
                 unmarkTask(taskNumber);
-              // Add task to list
+                // Add Todo task
+            } else if (input.startsWith("todo ")) {
+                addTask(new Todo(input.substring(5)));
+                // Add Deadline task
+            } else if (input.startsWith("deadline ")) {
+                String[] parts = input.substring(9).split(" /by ");
+                addTask(new Deadline(parts[0], parts[1]));
+                // Add Event task
+            } else if (input.startsWith("event ")) {
+                String[] parts = input.substring(6).split(" /from | /to ");
+                addTask(new Event(parts[0], parts[1], parts[2]));
+                // Add normal task
             } else {
-                addTask(input);
+                addTask(new Task(input));
             }
         }
 
+        // Goodbye message
         System.out.println(" Bye. Hope to see you again soon!");
         System.out.println("____________________________________________________________");
 
@@ -47,12 +59,14 @@ public class Daisy {
     }
 
     // Add task
-    private static void addTask(String description) {
+    private static void addTask(Task task) {
         if (taskCount < MAX_ITEMS) {
-            tasks[taskCount] = new Task(description);
+            tasks[taskCount] = task;
             taskCount++;
             System.out.println("____________________________________________________________");
-            System.out.println(" added: " + description);
+            System.out.println(" Got it. I've added this task:");
+            System.out.println("   " + task);
+            System.out.println(" Now you have " + taskCount + " tasks in the list.");
             System.out.println("____________________________________________________________");
         } else {
             System.out.println("____________________________________________________________");
@@ -61,12 +75,12 @@ public class Daisy {
         }
     }
 
-    // List task
+    // List tasks
     private static void listTasks() {
         System.out.println("____________________________________________________________");
         System.out.println(" Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
-            System.out.println((i + 1) + ".[" + tasks[i].getStatusIcon() + "] " + tasks[i].getDescription());
+            System.out.println((i + 1) + "." + tasks[i]);
         }
         System.out.println("____________________________________________________________");
     }
@@ -77,7 +91,7 @@ public class Daisy {
             tasks[taskNumber - 1].markAsDone();
             System.out.println("____________________________________________________________");
             System.out.println(" Nice! I've marked this task as done:");
-            System.out.println("   [X] " + tasks[taskNumber - 1].getDescription());
+            System.out.println("   " + tasks[taskNumber - 1]);
             System.out.println("____________________________________________________________");
         } else {
             System.out.println("____________________________________________________________");
@@ -92,7 +106,7 @@ public class Daisy {
             tasks[taskNumber - 1].markAsNotDone();
             System.out.println("____________________________________________________________");
             System.out.println(" OK, I've marked this task as not done yet:");
-            System.out.println("   [ ] " + tasks[taskNumber - 1].getDescription());
+            System.out.println("   " + tasks[taskNumber - 1]);
             System.out.println("____________________________________________________________");
         } else {
             System.out.println("____________________________________________________________");
@@ -125,5 +139,54 @@ class Task {
 
     public void markAsNotDone() {
         isDone = false;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getStatusIcon() + "] " + description;
+    }
+}
+
+// Todo task
+class Todo extends Task {
+    public Todo(String description) {
+        super(description);
+    }
+
+    @Override
+    public String toString() {
+        return "[T]" + super.toString();
+    }
+}
+
+// Deadline task
+class Deadline extends Task {
+    protected String by;
+
+    public Deadline(String description, String by) {
+        super(description);
+        this.by = by;
+    }
+
+    @Override
+    public String toString() {
+        return "[D]" + super.toString() + " (by: " + by + ")";
+    }
+}
+
+// Event task
+class Event extends Task {
+    protected String from;
+    protected String to;
+
+    public Event(String description, String from, String to) {
+        super(description);
+        this.from = from;
+        this.to = to;
+    }
+
+    @Override
+    public String toString() {
+        return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
