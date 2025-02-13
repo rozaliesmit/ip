@@ -2,19 +2,16 @@ import java.util.Scanner;
 
 public class Daisy {
     // Maximum number of tasks
-    private static final int MAX_ITEMS = 100;
-    private static Task[] tasks = new Task[MAX_ITEMS];
+    private static final int MAX_TASKS = 100;
+    private static Task[] tasks = new Task[MAX_TASKS];
     private static int taskCount = 0;
 
     public static void main(String[] args) {
         // Introduction message
-        System.out.println("____________________________________________________________");
-        System.out.println(" Hello! I'm Daisy");
-        System.out.println(" What can I do for you?");
-        System.out.println("____________________________________________________________");
+        printIntroduction();
 
         Scanner scanner = new Scanner(System.in);
-        String input = "";
+        String input;
 
         // Respond to user commands
         while (true) {
@@ -22,56 +19,100 @@ public class Daisy {
             // End conversation
             if (input.equals("bye")) {
                 break;
-                // Display list
             } else if (input.equals("list")) {
                 listTasks();
-                // Mark task as done
             } else if (input.startsWith("mark ")) {
-                int taskNumber = Integer.parseInt(input.split(" ")[1]);
-                markTask(taskNumber);
-                // Unmark task
+                invalidMarkTask(input);
             } else if (input.startsWith("unmark ")) {
-                int taskNumber = Integer.parseInt(input.split(" ")[1]);
-                unmarkTask(taskNumber);
-                // Add Todo task
+                invalidUnmarkTask(input);
             } else if (input.startsWith("todo ")) {
-                addTask(new Todo(input.substring(5)));
-                // Add Deadline task
+                invalidTodoTask(input);
             } else if (input.startsWith("deadline ")) {
-                String[] parts = input.substring(9).split(" /by ");
-                addTask(new Deadline(parts[0], parts[1]));
-                // Add Event task
+                invalidDeadlineTask(input);
             } else if (input.startsWith("event ")) {
-                String[] parts = input.substring(6).split(" /from | /to ");
-                addTask(new Event(parts[0], parts[1], parts[2]));
-                // Add normal task
+                invalidEventTask(input);
             } else {
                 addTask(new Task(input));
             }
         }
 
         // Goodbye message
-        System.out.println(" Bye. Hope to see you again soon!");
-        System.out.println("____________________________________________________________");
+        printGoodbye();
 
         scanner.close();
     }
 
+    private static void printIntroduction() {
+        System.out.println("____________________________________________________________");
+        System.out.println(" Hello! I'm Daisy");
+        System.out.println(" What can I do for you?");
+        System.out.println("____________________________________________________________");
+    }
+
+    private static void printGoodbye() {
+        System.out.println(" Bye. Hope to see you again soon!");
+        System.out.println("____________________________________________________________");
+    }
+
+    private static void invalidMarkTask(String input) {
+        try {
+            int taskNumber = Integer.parseInt(input.split(" ")[1]);
+            markTask(taskNumber);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'mark <task_number>' instead.");
+        }
+    }
+
+    private static void invalidUnmarkTask(String input) {
+        try {
+            int taskNumber = Integer.parseInt(input.split(" ")[1]);
+            unmarkTask(taskNumber);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'unmark <task_number>' instead.");
+        }
+    }
+
+    private static void invalidTodoTask(String input) {
+        addTask(new TodoTask(input.substring(5)));
+    }
+
+    private static void invalidDeadlineTask(String input) {
+        String[] parts = input.substring(9).split(" /by ");
+        if (parts.length == 2) {
+            addTask(new DeadlineTask(parts[0], parts[1]));
+        } else {
+            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'deadline <description> /by <time>' instead.");
+        }
+    }
+
+    private static void invalidEventTask(String input) {
+        String[] parts = input.substring(6).split(" /from | /to ");
+        if (parts.length == 3) {
+            addTask(new EventTask(parts[0], parts[1], parts[2]));
+        } else {
+            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'event <description> /from <start_time> /to <end_time>' instead.");
+        }
+    }
+
     // Add task
     private static void addTask(Task task) {
-        if (taskCount < MAX_ITEMS) {
+        if (taskCount < MAX_TASKS) {
             tasks[taskCount] = task;
             taskCount++;
-            System.out.println("____________________________________________________________");
-            System.out.println(" Got it. I've added this task:");
-            System.out.println("   " + task);
-            System.out.println(" Now you have " + taskCount + " tasks in the list.");
-            System.out.println("____________________________________________________________");
+            printTaskAdded(task);
         } else {
             System.out.println("____________________________________________________________");
-            System.out.println(" List is full, cannot add more tasks.");
+            System.out.println("Oh no! The list is full, I am unable to add more tasks :(");
             System.out.println("____________________________________________________________");
         }
+    }
+
+    private static void printTaskAdded(Task task) {
+        System.out.println("____________________________________________________________");
+        System.out.println(" Got it. I've added this task:");
+        System.out.println("   " + task);
+        System.out.println(" Now you have " + taskCount + " tasks in the list.");
+        System.out.println("____________________________________________________________");
     }
 
     // List tasks
@@ -88,33 +129,42 @@ public class Daisy {
     private static void markTask(int taskNumber) {
         if (taskNumber > 0 && taskNumber <= taskCount) {
             tasks[taskNumber - 1].markAsDone();
-            System.out.println("____________________________________________________________");
-            System.out.println(" Nice! I've marked this task as done:");
-            System.out.println("   " + tasks[taskNumber - 1]);
-            System.out.println("____________________________________________________________");
+            printTaskMarkedDone(tasks[taskNumber - 1]);
         } else {
             System.out.println("____________________________________________________________");
             System.out.println(" Invalid task number.");
             System.out.println("____________________________________________________________");
         }
+    }
+
+    private static void printTaskMarkedDone(Task task) {
+        System.out.println("____________________________________________________________");
+        System.out.println(" Nice! I've marked this task as done:");
+        System.out.println("   " + task);
+        System.out.println("____________________________________________________________");
     }
 
     // Unmark task
     private static void unmarkTask(int taskNumber) {
         if (taskNumber > 0 && taskNumber <= taskCount) {
             tasks[taskNumber - 1].markAsNotDone();
-            System.out.println("____________________________________________________________");
-            System.out.println(" OK, I've marked this task as not done yet:");
-            System.out.println("   " + tasks[taskNumber - 1]);
-            System.out.println("____________________________________________________________");
+            printTaskUnmarked(tasks[taskNumber - 1]);
         } else {
             System.out.println("____________________________________________________________");
             System.out.println(" Invalid task number.");
             System.out.println("____________________________________________________________");
         }
     }
+
+    private static void printTaskUnmarked(Task task) {
+        System.out.println("____________________________________________________________");
+        System.out.println(" OK, I've marked this task as not done yet:");
+        System.out.println("   " + task);
+        System.out.println("____________________________________________________________");
+    }
 }
 
+// Base Task class
 class Task {
     protected String description;
     protected boolean isDone;
@@ -147,8 +197,8 @@ class Task {
 }
 
 // Todo task
-class Todo extends Task {
-    public Todo(String description) {
+class TodoTask extends Task {
+    public TodoTask(String description) {
         super(description);
     }
 
@@ -159,10 +209,10 @@ class Todo extends Task {
 }
 
 // Deadline task
-class Deadline extends Task {
+class DeadlineTask extends Task {
     protected String by;
 
-    public Deadline(String description, String by) {
+    public DeadlineTask(String description, String by) {
         super(description);
         this.by = by;
     }
@@ -174,11 +224,11 @@ class Deadline extends Task {
 }
 
 // Event task
-class Event extends Task {
+class EventTask extends Task {
     protected String from;
     protected String to;
 
-    public Event(String description, String from, String to) {
+    public EventTask(String description, String from, String to) {
         super(description);
         this.from = from;
         this.to = to;
