@@ -19,20 +19,24 @@ public class Daisy {
             // End conversation
             if (input.equals("bye")) {
                 break;
+            } else if (input.equals("help")) {
+                printHelp();
             } else if (input.equals("list")) {
                 listTasks();
-            } else if (input.startsWith("mark ")) {
+            } else if (input.startsWith("mark")) {
                 invalidMarkTask(input);
-            } else if (input.startsWith("unmark ")) {
+            } else if (input.startsWith("unmark")) {
                 invalidUnmarkTask(input);
-            } else if (input.startsWith("todo ")) {
+            } else if (input.startsWith("todo")) {
                 invalidTodoTask(input);
-            } else if (input.startsWith("deadline ")) {
+            } else if (input.startsWith("deadline")) {
                 invalidDeadlineTask(input);
-            } else if (input.startsWith("event ")) {
+            } else if (input.startsWith("event")) {
                 invalidEventTask(input);
             } else {
-                addTask(new Task(input));
+                System.out.println("____________________________________________________________");
+                System.out.println("Oh no! It seems like you entered an invalid command. Please try again or enter 'help' for a comprehensive list of commands.");
+                System.out.println("_____________________________________________________________");
             }
         }
 
@@ -54,6 +58,20 @@ public class Daisy {
         System.out.println("____________________________________________________________");
     }
 
+    private static void printHelp() {
+        System.out.println("____________________________________________________________");
+        System.out.println("Hii, here's the list of available commands with their respective format");
+        System.out.println(" -list: Lists all the tasks");
+        System.out.println(" -mark <task_number>: Marks a task");
+        System.out.println(" -unmark <task_number>: Unmarks a task");
+        System.out.println(" -todo <description>: Adds a new todo task");
+        System.out.println(" -deadline <description> /by <time>: Adds a new deadline task");
+        System.out.println(" -event <description> /from <start_time> /to <end_time>: Adds a new event task");
+        System.out.println(" -bye: Exits the program");
+        System.out.println("Thank you for asking for help :)");
+        System.out.println("______________________________________________________________");
+    }
+
     private static void invalidMarkTask(String input) {
         try {
             int taskNumber = Integer.parseInt(input.split(" ")[1]);
@@ -73,15 +91,18 @@ public class Daisy {
     }
 
     private static void invalidTodoTask(String input) {
+        if description
         addTask(new TodoTask(input.substring(5)));
     }
 
     private static void invalidDeadlineTask(String input) {
-        String[] parts = input.substring(9).split(" /by ");
-        if (parts.length == 2) {
-            addTask(new DeadlineTask(parts[0], parts[1]));
+        String description = input.substring(5).trim();
+        if (description.isEmpty()) {
+            System.out.println("____________________________________________________________");
+            System.out.println("Oh no! The description of a todo can't be empty. Please add a description of the todo task or refer to the 'help' command.");
+            System.out.println("____________________________________________________________");
         } else {
-            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'deadline <description> /by <time>' instead.");
+            addTask(new TodoTask(description));
         }
     }
 
