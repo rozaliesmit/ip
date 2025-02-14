@@ -3,7 +3,7 @@ import java.util.Scanner;
 public class Daisy {
     // Maximum number of tasks
     private static final int MAX_TASKS = 100;
-    private static Task[] tasks = new Task[MAX_TASKS];
+    private static final Task[] tasks = new Task[MAX_TASKS];
     private static int taskCount = 0;
 
     public static void main(String[] args) {
@@ -91,8 +91,15 @@ public class Daisy {
     }
 
     private static void invalidTodoTask(String input) {
-        if description
-        addTask(new TodoTask(input.substring(5)));
+        String description = input.substring(5).trim();
+
+        if (description.isEmpty()) {
+            System.out.println("____________________________________________________________");
+            System.out.println("Oh no! The description of a todo can't be empty. Please add a description of the todo task or refer to the 'help' command.");
+            System.out.println("____________________________________________________________");
+        } else {
+            addTask(new TodoTask(description));
+        }
     }
 
     private static void invalidDeadlineTask(String input) {
