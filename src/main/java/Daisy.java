@@ -1,21 +1,18 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Daisy {
-    // Maximum number of tasks
-    private static final int MAX_TASKS = 100;
-    private static final Task[] tasks = new Task[MAX_TASKS];
-    private static int taskCount = 0;
+    // Store tasks in arrayList
+    private static final ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         // Introduction message
         printIntroduction();
-
         Scanner scanner = new Scanner(System.in);
-        String input;
 
         // Respond to user commands
         while (true) {
-            input = scanner.nextLine();
+            String input = scanner.nextLine();
             // End conversation
             if (input.equals("bye")) {
                 break;
@@ -33,16 +30,17 @@ public class Daisy {
                 invalidDeadlineTask(input);
             } else if (input.startsWith("event")) {
                 invalidEventTask(input);
+            } else if (input.startsWith("delete")) {
+                invalidDeleteTask(input);
             } else {
                 System.out.println("____________________________________________________________");
-                System.out.println("Oh no! It seems like you entered an invalid command. Please try again or enter 'help' for a comprehensive list of commands.");
-                System.out.println("_____________________________________________________________");
+                System.out.println("Oh no! Invalid command. Type 'help' for a list of commands.");
+                System.out.println("____________________________________________________________");
             }
         }
 
         // Goodbye message
         printGoodbye();
-
         scanner.close();
     }
 
@@ -60,24 +58,38 @@ public class Daisy {
 
     private static void printHelp() {
         System.out.println("____________________________________________________________");
-        System.out.println("Hii, here's the list of available commands with their respective format");
-        System.out.println(" -list: Lists all the tasks");
-        System.out.println(" -mark <task_number>: Marks a task");
-        System.out.println(" -unmark <task_number>: Unmarks a task");
-        System.out.println(" -todo <description>: Adds a new todo task");
-        System.out.println(" -deadline <description> /by <time>: Adds a new deadline task");
-        System.out.println(" -event <description> /from <start_time> /to <end_time>: Adds a new event task");
-        System.out.println(" -bye: Exits the program");
-        System.out.println("Thank you for asking for help :)");
-        System.out.println("______________________________________________________________");
+        System.out.println("Commands:");
+        System.out.println(" - list: Show all tasks");
+        System.out.println(" - mark <task_number>: Mark a task as done");
+        System.out.println(" - unmark <task_number>: Unmark a task");
+        System.out.println(" - todo <description>: Add a new todo task");
+        System.out.println(" - deadline <description> /by <time>: Add a deadline task");
+        System.out.println(" - event <description> /from <start_time> /to <end_time>: Add an event task");
+        System.out.println(" - delete <task_number>: Remove a task");
+        System.out.println(" - bye: Exit the program");
+        System.out.println("____________________________________________________________");
+    }
+
+    // List task
+    private static void listTasks() {
+        System.out.println("____________________________________________________________");
+        if (tasks.isEmpty()) {
+            System.out.println("Your task list is empty!");
+        } else {
+            System.out.println("Here are the tasks in your list:");
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println((i + 1) + ". " + tasks.get(i));
+            }
+        }
+        System.out.println("____________________________________________________________");
     }
 
     private static void invalidMarkTask(String input) {
         try {
             int taskNumber = Integer.parseInt(input.split(" ")[1]);
             markTask(taskNumber);
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'mark <task_number>' instead.");
+        } catch (Exception e) {
+            System.out.println("Invalid format! Use: mark <task_number>");
         }
     }
 
@@ -85,31 +97,26 @@ public class Daisy {
         try {
             int taskNumber = Integer.parseInt(input.split(" ")[1]);
             unmarkTask(taskNumber);
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'unmark <task_number>' instead.");
+        } catch (Exception e) {
+            System.out.println("Invalid format! Use: unmark <task_number>");
         }
     }
 
     private static void invalidTodoTask(String input) {
         String description = input.substring(5).trim();
-
         if (description.isEmpty()) {
-            System.out.println("____________________________________________________________");
-            System.out.println("Oh no! The description of a todo can't be empty. Please add a description of the todo task or refer to the 'help' command.");
-            System.out.println("____________________________________________________________");
+            System.out.println("Todo description cannot be empty!");
         } else {
             addTask(new TodoTask(description));
         }
     }
 
     private static void invalidDeadlineTask(String input) {
-        String description = input.substring(5).trim();
-        if (description.isEmpty()) {
-            System.out.println("____________________________________________________________");
-            System.out.println("Oh no! The description of a todo can't be empty. Please add a description of the todo task or refer to the 'help' command.");
-            System.out.println("____________________________________________________________");
+        String[] parts = input.substring(9).split(" /by ");
+        if (parts.length == 2) {
+            addTask(new DeadlineTask(parts[0], parts[1]));
         } else {
-            addTask(new TodoTask(description));
+            System.out.println("Invalid format! Use: deadline <description> /by <time>");
         }
     }
 
@@ -118,77 +125,63 @@ public class Daisy {
         if (parts.length == 3) {
             addTask(new EventTask(parts[0], parts[1], parts[2]));
         } else {
-            System.out.println("Oh no! Seems like the command format was invalid. Please use the format 'event <description> /from <start_time> /to <end_time>' instead.");
+            System.out.println("Invalid format! Use: event <description> /from <start_time> /to <end_time>");
+        }
+    }
+
+    private static void invalidDeleteTask(String input) {
+        try {
+            int taskNumber = Integer.parseInt(input.split(" ")[1]);
+            deleteTask(taskNumber);
+        } catch (Exception e) {
+            System.out.println("Invalid format! Use: delete <task_number>");
         }
     }
 
     // Add task
     private static void addTask(Task task) {
-        if (taskCount < MAX_TASKS) {
-            tasks[taskCount] = task;
-            taskCount++;
-            printTaskAdded(task);
-        } else {
-            System.out.println("____________________________________________________________");
-            System.out.println("Oh no! The list is full, I am unable to add more tasks :(");
-            System.out.println("____________________________________________________________");
-        }
-    }
-
-    private static void printTaskAdded(Task task) {
+        tasks.add(task);
         System.out.println("____________________________________________________________");
-        System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println(" Now you have " + taskCount + " tasks in the list.");
-        System.out.println("____________________________________________________________");
-    }
-
-    // List tasks
-    private static void listTasks() {
-        System.out.println("____________________________________________________________");
-        System.out.println(" Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println((i + 1) + "." + tasks[i]);
-        }
+        System.out.println("Added: " + task);
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
         System.out.println("____________________________________________________________");
     }
 
     // Mark task as done
     private static void markTask(int taskNumber) {
-        if (taskNumber > 0 && taskNumber <= taskCount) {
-            tasks[taskNumber - 1].markAsDone();
-            printTaskMarkedDone(tasks[taskNumber - 1]);
+        if (taskNumber > 0 && taskNumber <= tasks.size()) {
+            tasks.get(taskNumber - 1).markAsDone();
+            System.out.println("____________________________________________________________");
+            System.out.println("Marked as done: " + tasks.get(taskNumber - 1));
+            System.out.println("____________________________________________________________");
         } else {
-            System.out.println("____________________________________________________________");
-            System.out.println(" Invalid task number.");
-            System.out.println("____________________________________________________________");
+            System.out.println("Invalid task number!");
         }
-    }
-
-    private static void printTaskMarkedDone(Task task) {
-        System.out.println("____________________________________________________________");
-        System.out.println(" Nice! I've marked this task as done:");
-        System.out.println("   " + task);
-        System.out.println("____________________________________________________________");
     }
 
     // Unmark task
     private static void unmarkTask(int taskNumber) {
-        if (taskNumber > 0 && taskNumber <= taskCount) {
-            tasks[taskNumber - 1].markAsNotDone();
-            printTaskUnmarked(tasks[taskNumber - 1]);
+        if (taskNumber > 0 && taskNumber <= tasks.size()) {
+            tasks.get(taskNumber - 1).markAsNotDone();
+            System.out.println("____________________________________________________________");
+            System.out.println("Unmarked: " + tasks.get(taskNumber - 1));
+            System.out.println("____________________________________________________________");
         } else {
-            System.out.println("____________________________________________________________");
-            System.out.println(" Invalid task number.");
-            System.out.println("____________________________________________________________");
+            System.out.println("Invalid task number!");
         }
     }
 
-    private static void printTaskUnmarked(Task task) {
-        System.out.println("____________________________________________________________");
-        System.out.println(" OK, I've marked this task as not done yet:");
-        System.out.println("   " + task);
-        System.out.println("____________________________________________________________");
+    // Delete task
+    private static void deleteTask(int taskNumber) {
+        if (taskNumber > 0 && taskNumber <= tasks.size()) {
+            Task removedTask = tasks.remove(taskNumber - 1);
+            System.out.println("____________________________________________________________");
+            System.out.println("Removed: " + removedTask);
+            System.out.println("Now you have " + tasks.size() + " tasks left.");
+            System.out.println("____________________________________________________________");
+        } else {
+            System.out.println("Invalid task number!");
+        }
     }
 }
 
@@ -202,14 +195,6 @@ class Task {
         this.isDone = false;
     }
 
-    public String getStatusIcon() {
-        return (isDone ? "X" : " ");
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public void markAsDone() {
         isDone = true;
     }
@@ -220,7 +205,7 @@ class Task {
 
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        return "[" + (isDone ? "X" : " ") + "] " + description;
     }
 }
 
@@ -238,7 +223,7 @@ class TodoTask extends Task {
 
 // Deadline task
 class DeadlineTask extends Task {
-    protected String by;
+    private final String by;
 
     public DeadlineTask(String description, String by) {
         super(description);
@@ -253,8 +238,7 @@ class DeadlineTask extends Task {
 
 // Event task
 class EventTask extends Task {
-    protected String from;
-    protected String to;
+    private final String from, to;
 
     public EventTask(String description, String from, String to) {
         super(description);
