@@ -121,7 +121,11 @@ class Storage {
     public ArrayList<Task> load() throws IOException {
         ArrayList<Task> tasks = new ArrayList<>();
         File file = new File(filePath);
-        if (!file.exists()) return tasks;
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+            return tasks;
+        }
 
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {
