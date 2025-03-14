@@ -1,0 +1,10 @@
+D | 0 | ip | midnight
+E | 0 | birthday | monday | tuesday
+E | 0 | holiday | today. | tomorrow
+T | 0 | sleep
+D | 0 | assignment 1 | august 5
+D | 0 | project1 | friday 23:59
+E | 0 | conference | monday 1PM | monday 7PM
+T | 0 | dream
+T | 0 | gardening
+D | 0 | dance | tomorrow
