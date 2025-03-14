@@ -68,8 +68,8 @@ class Ui {
     public void showWelcome() {
         System.out.println("____________________________________________________________");
         System.out.println(" Hello! I'm Daisy 🌼");
-        System.out.println(" What can I do for you?");
-        System.out.println(" Type 'help' to see available commands.");
+        System.out.println(" How can I help you today?");
+        System.out.println(" Type 'help' to see all of my petals (possible commands).");
         System.out.println("____________________________________________________________");
     }
 
@@ -77,7 +77,7 @@ class Ui {
      * Displays the goodbye message
      */
     public void showGoodbye() {
-        System.out.println(" Bye! Hope to see you again soon. 🌸");
+        System.out.println(" Byebye! I'll be photosynthesizing in the corner but I hope to see you bloom again soon! 🌸");
     }
 
     public String readCommand() {
@@ -92,7 +92,7 @@ class Ui {
      * Displays an error message when loading tasks doesn't work
      */
     public void showLoadingError() {
-        System.out.println("Error loading saved tasks.");
+        System.out.println("Oh no! There appears to be an error loading saved tasks. Please try again!");
     }
 
     /**
@@ -101,7 +101,7 @@ class Ui {
      * @param message the error message to display
      */
     public void showError(String message) {
-        System.out.println("Error: " + message);
+        System.out.println("Oh no! There appears to be an error visiting us. This is its name: " + message);
     }
 }
 
@@ -146,7 +146,7 @@ class Storage {
     }
 }
 
-// Manages the task list, including adding, deleting, marking, and listing tasks
+// Manages the task list
 class TaskList {
     private ArrayList<Task> tasks;
 
@@ -165,7 +165,7 @@ class TaskList {
      */
     public void addTask(Task task) {
         tasks.add(task);
-        System.out.println("Added: " + task);
+        System.out.println("Woww that sounds delightful! I will add: " + task);
     }
 
     /**
@@ -174,7 +174,7 @@ class TaskList {
      * @param keyword the keyword to search for in tasks
      */
     public void findTask(String keyword) {
-        System.out.println("Here are the matching tasks in your list:");
+        System.out.println("I see colours everywhere! Here are the matching tasks in your list:");
         int count = 0;
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).description.contains(keyword)) {
@@ -183,22 +183,22 @@ class TaskList {
             }
         }
         if (count == 0) {
-            System.out.println("No matching tasks found.");
+            System.out.println("Oh no! I couldn't find any matching tasks. Please refer to the 'list' function instead.");
         }
     }
 
     public void deleteTask(int index) {
         if (index < 1 || index > tasks.size()) {
-            System.out.println("Invalid task number!");
+            System.out.println("Oh no! This is an invalid task number! Please look at the 'list'.");
             return;
         }
         Task removed = tasks.remove(index - 1);
-        System.out.println("Removed: " + removed);
+        System.out.println("Let's remove this: " + removed);
     }
 
     public void listTasks() {
         if (tasks.isEmpty()) {
-            System.out.println("Your task list is empty!");
+            System.out.println("Your task list is empty! Time to fill it up with lots of fun activities :)");
             return;
         }
         for (int i = 0; i < tasks.size(); i++) {
@@ -208,12 +208,12 @@ class TaskList {
 
     public void markTask(int index) {
         tasks.get(index - 1).markAsDone();
-        System.out.println("Marked as done: " + tasks.get(index - 1));
+        System.out.println("Well done! I've marked this task as done: " + tasks.get(index - 1));
     }
 
     public void unmarkTask(int index) {
         tasks.get(index - 1).markAsNotDone();
-        System.out.println("Unmarked: " + tasks.get(index - 1));
+        System.out.println("Uhoh are we getting ahead of ourselves? I've unmarked: " + tasks.get(index - 1));
     }
 
     public ArrayList<Task> getTasks() {
@@ -252,7 +252,7 @@ class Parser {
         case "find":
             return new FindCommand(args);
         default:
-            throw new IllegalArgumentException("Invalid command! Type 'help' to see available commands.");
+            throw new IllegalArgumentException("Oh no! This is an invalid command! Use the 'help' command to see all possibilities.");
         }
     }
 }
@@ -341,7 +341,7 @@ class ExitCommand extends Command {
 
 class HelpCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) {
-        System.out.println("Available commands:");
+        System.out.println("Of course, I'm happy to help! Here's all the available commands:");
         System.out.println("  list - Show all tasks");
         System.out.println("  todo [task] - Add a to-do");
         System.out.println("  deadline [task] /by [date] - Add a deadline");
@@ -349,7 +349,7 @@ class HelpCommand extends Command {
         System.out.println("  mark [index] - Mark task as done");
         System.out.println("  unmark [index] - Unmark task");
         System.out.println("  delete [index] - Delete task");
-        System.out.println("  find [index] - Find task");
+        System.out.println("  find [keyword] - Find task");
         System.out.println("  bye - Exit program");
     }
 }
@@ -422,7 +422,7 @@ abstract class Task {
             if (parts[1].equals("1")) event.markAsDone();
             return event;
         default:
-            throw new IllegalArgumentException("Invalid task type in file.");
+            throw new IllegalArgumentException("Oh no! There is an invalid task type in the file. Please check the file for more information.");
         }
     }
 

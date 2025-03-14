@@ -11,7 +11,7 @@ Example: `help`
 Example output:
 
 ```
-Available commands:
+Of course, I'm happy to help! Here's all the available commands:
   list - Show all tasks
   todo [task] - Add a to-do
   deadline [task] /by [date] - Add a deadline
@@ -48,7 +48,7 @@ Example: `todo laundry`
 Example output:
 
 ```
-Added: [T] [ ] laundry
+Woww that sounds delightful! I will add:: [T] [ ] laundry
 ```
 
 ## Deadline: adding a deadline
@@ -61,7 +61,7 @@ Example: `deadline project1 /by friday 23:59`
 Example output:
 
 ```
-Added: [D] [ ] project1 (by: friday 23:59)
+Woww that sounds delightful! I will add:: [D] [ ] project1 (by: friday 23:59)
 ```
 
 ## Event: adding an event
@@ -74,7 +74,7 @@ Example: `event conference /from monday 1PM /to monday 7PM`
 Example output:
 
 ```
-Added: [E] [ ] conference (from: monday 1PM to: monday 7PM)
+Woww that sounds delightful! I will add:: [E] [ ] conference (from: monday 1PM to: monday 7PM)
 ```
 
 ## Mark: marking a task as done
@@ -87,7 +87,7 @@ Example: `mark 5`
 Example output:
 
 ```
-Marked as done: [E] [X] wedding (from: 6 to: 7)
+Well done! I've marked this task as done: [E] [X] wedding (from: 6 to: 7)
 ```
 
 ## Unmark: unmarking a task as done
@@ -100,7 +100,7 @@ Example: `unmark 5`
 Example output:
 
 ```
-Unmarked: [E] [] wedding (from: 6 to: 7)
+Uhoh are we getting ahead of ourselves? I've unmarked: [E] [] wedding (from: 6 to: 7)
 ```
 
 ## Delete: delete a task
@@ -113,7 +113,7 @@ Example: `delete 5`
 Example output:
 
 ```
-Removed: [E] [ ] wedding (from: 6 to: 7)
+Let's remove this: [E] [ ] wedding (from: 6 to: 7)
 ```
 
 ## find: find a task
@@ -126,7 +126,7 @@ Example: `find day`
 Example output:
 
 ```
-Here are the matching tasks in your list:
+I see colours everywhere! Here are the matching tasks in your list:
 1. [E] [ ] birthday (from: monday to: tuesday)
 2. [E] [ ] holiday (from: today. to: tomorrow)
 ```
