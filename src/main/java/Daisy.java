@@ -1,245 +1,290 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.*;
 
+// Main class
 public class Daisy {
-    private static final String FILE_PATH = "./data/daisy.txt";
-    // Store tasks in arrayList
-    private static final ArrayList<Task> tasks = new ArrayList<>();
+    private Storage storage;
+    private TaskList tasks;
+    private Ui ui;
+
+    public Daisy(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+        try {
+            tasks = new TaskList(storage.load());
+        } catch (Exception e) {
+            ui.showLoadingError();
+            tasks = new TaskList();
+        }
+    }
+
+    public void run() {
+        ui.showWelcome();
+        boolean isExit = false;
+        while (!isExit) {
+            try {
+                String fullCommand = ui.readCommand();
+                ui.showLine();
+                Command c = Parser.parse(fullCommand);
+                c.execute(tasks, ui, storage);
+                isExit = c.isExit();
+            } catch (Exception e) {
+                ui.showError(e.getMessage());
+            } finally {
+                ui.showLine();
+            }
+        }
+    }
 
     public static void main(String[] args) {
-        Storage.loadTasks(tasks, FILE_PATH);
-        // Introduction message
-        printIntroduction();
-        Scanner scanner = new Scanner(System.in);
+        new Daisy("data/daisy.txt").run();
+    }
+}
 
-        // Respond to user commands
-        while (true) {
-            String input = scanner.nextLine();
-            // End conversation
-            if (input.equals("bye")) {
-                break;
-            } else if (input.equals("help")) {
-                printHelp();
-            } else if (input.equals("list")) {
-                listTasks();
-            } else if (input.startsWith("mark")) {
-                invalidMarkTask(input);
-            } else if (input.startsWith("unmark")) {
-                invalidUnmarkTask(input);
-            } else if (input.startsWith("todo")) {
-                invalidTodoTask(input);
-            } else if (input.startsWith("deadline")) {
-                invalidDeadlineTask(input);
-            } else if (input.startsWith("event")) {
-                invalidEventTask(input);
-            } else if (input.startsWith("delete")) {
-                invalidDeleteTask(input);
-            } else {
-                System.out.println("____________________________________________________________");
-                System.out.println("Oh no! Invalid command. Type 'help' for a list of commands.");
-                System.out.println("____________________________________________________________");
-            }
-        }
+// User interface handler
+class Ui {
+    private final Scanner scanner;
 
-        // Goodbye message
-        printGoodbye();
-        scanner.close();
+    public Ui() {
+        scanner = new Scanner(System.in);
     }
 
-    private static void printIntroduction() {
+    public void showWelcome() {
         System.out.println("____________________________________________________________");
-        System.out.println(" Hello! I'm Daisy");
+        System.out.println(" Hello! I'm Daisy 🌼");
         System.out.println(" What can I do for you?");
+        System.out.println(" Type 'help' to see available commands.");
         System.out.println("____________________________________________________________");
     }
 
-    private static void printGoodbye() {
-        System.out.println(" Bye. Hope to see you again soon!");
+    public void showGoodbye() {
+        System.out.println(" Bye! Hope to see you again soon. 🌸");
+    }
+
+    public String readCommand() {
+        return scanner.nextLine();
+    }
+
+    public void showLine() {
         System.out.println("____________________________________________________________");
     }
 
-    private static void printHelp() {
-        System.out.println("____________________________________________________________");
-        System.out.println("Commands:");
-        System.out.println(" - list: Show all tasks");
-        System.out.println(" - mark <task_number>: Mark a task as done");
-        System.out.println(" - unmark <task_number>: Unmark a task");
-        System.out.println(" - todo <description>: Add a new todo task");
-        System.out.println(" - deadline <description> /by <time>: Add a deadline task");
-        System.out.println(" - event <description> /from <start_time> /to <end_time>: Add an event task");
-        System.out.println(" - delete <task_number>: Remove a task");
-        System.out.println(" - bye: Exit the program");
-        System.out.println("____________________________________________________________");
+    public void showLoadingError() {
+        System.out.println("Error loading saved tasks.");
     }
 
-    // List task
-    private static void listTasks() {
-        System.out.println("____________________________________________________________");
-        if (tasks.isEmpty()) {
-            System.out.println("Your task list is empty!");
-        } else {
-            System.out.println("Here are the tasks in your list:");
-            for (int i = 0; i < tasks.size(); i++) {
-                System.out.println((i + 1) + ". " + tasks.get(i));
+    public void showError(String message) {
+        System.out.println("Error: " + message);
+    }
+}
+
+// Handles storage operations
+class Storage {
+    private final String filePath;
+
+    public Storage(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public ArrayList<Task> load() throws IOException {
+        ArrayList<Task> tasks = new ArrayList<>();
+        File file = new File(filePath);
+        if (!file.exists()) return tasks;
+
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine()) {
+                tasks.add(Task.fromFileString(scanner.nextLine()));
             }
         }
-        System.out.println("____________________________________________________________");
+        return tasks;
     }
 
-    private static void invalidMarkTask(String input) {
-        try {
-            int taskNumber = Integer.parseInt(input.split(" ")[1]);
-            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                System.out.println("Invalid task number! Please enter a valid task number!");
-                return;
+    public void save(ArrayList<Task> tasks) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Task task : tasks) {
+                writer.write(task.toFileString() + "\n");
             }
-            tasks.get(taskNumber - 1).markAsDone();
-            Storage.saveTasks(tasks, FILE_PATH);
-            System.out.println("Marked task as done: " + tasks.get(taskNumber - 1));
-        } catch (Exception e) {
-            System.out.println("Invalid format! Use: mark <task_number>");
         }
     }
+}
 
-    private static void invalidUnmarkTask(String input) {
-        try {
-            int taskNumber = Integer.parseInt(input.split(" ")[1]);
-            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                System.out.println("Invalid task number! Please enter a valid task number!");
-                return;
-            }
-            tasks.get(taskNumber - 1).markAsNotDone();
-            Storage.saveTasks(tasks, FILE_PATH);
-            System.out.println("Unmarked task as done: " + tasks.get(taskNumber - 1));
-        } catch (Exception e) {
-            System.out.println("Invalid format! Use: unmark <task_number>");
-        }
+// Manages the task list
+class TaskList {
+    private final ArrayList<Task> tasks;
+
+    public TaskList() {
+        this.tasks = new ArrayList<>();
     }
 
-    private static void invalidTodoTask(String input) {
-        String description = input.substring(5).trim();
-        if (description.isEmpty()) {
-            System.out.println("Todo description cannot be empty!");
-        } else {
-            addTask(new TodoTask(description));
-        }
+    public TaskList(ArrayList<Task> tasks) {
+        this.tasks = tasks;
     }
 
-    private static void invalidDeadlineTask(String input) {
-        String[] parts = input.substring(9).split(" /by ");
-        if (parts.length == 2) {
-            addTask(new DeadlineTask(parts[0], parts[1]));
-        } else {
-            System.out.println("Invalid format! Use: deadline <description> /by <time>");
-        }
-    }
-
-    private static void invalidEventTask(String input) {
-        String[] parts = input.substring(6).split(" /from | /to ", 3);
-        if (parts.length == 3) {
-            addTask(new EventTask(parts[0], parts[1], parts[2]));
-        } else {
-            System.out.println("Invalid format! Use: event <description> /from <start_time> /to <end_time>");
-        }
-    }
-
-    private static void invalidDeleteTask(String input) {
-        try {
-            int taskNumber = Integer.parseInt(input.split(" ")[1]);
-            deleteTask(taskNumber);
-        } catch (Exception e) {
-            System.out.println("Invalid format! Use: delete <task_number>");
-        }
-    }
-
-    // Add task
-    private static void addTask(Task task) {
+    public void addTask(Task task) {
         tasks.add(task);
-        Storage.saveTasks(tasks, FILE_PATH);
-        System.out.println("____________________________________________________________");
         System.out.println("Added: " + task);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-        System.out.println("____________________________________________________________");
     }
 
-    // Mark task as done
-    private static void markTask(int taskNumber) {
-        if (taskNumber > 0 && taskNumber <= tasks.size()) {
-            tasks.get(taskNumber - 1).markAsDone();
-            System.out.println("____________________________________________________________");
-            System.out.println("Marked as done: " + tasks.get(taskNumber - 1));
-            System.out.println("____________________________________________________________");
-        } else {
+    public void deleteTask(int index) {
+        if (index < 1 || index > tasks.size()) {
             System.out.println("Invalid task number!");
-        }
-    }
-
-    // Unmark task
-    private static void unmarkTask(int taskNumber) {
-        if (taskNumber > 0 && taskNumber <= tasks.size()) {
-            tasks.get(taskNumber - 1).markAsNotDone();
-            System.out.println("____________________________________________________________");
-            System.out.println("Unmarked: " + tasks.get(taskNumber - 1));
-            System.out.println("____________________________________________________________");
-        } else {
-            System.out.println("Invalid task number!");
-        }
-    }
-
-    // Delete task
-    private static void deleteTask(int taskNumber) {
-        if (taskNumber > 1 || taskNumber > tasks.size()) {
-            System.out.println("Invalid task number! Please enter a valid task number!");
             return;
         }
-            Task removedTask = tasks.remove(taskNumber - 1);
-            Storage.saveTasks(tasks, FILE_PATH);
-            System.out.println("____________________________________________________________");
-            System.out.println("Removed: " + removedTask);
-            System.out.println("Now you have " + tasks.size() + " tasks left.");
-            System.out.println("____________________________________________________________");
+        Task removed = tasks.remove(index - 1);
+        System.out.println("Removed: " + removed);
+    }
+
+    public void listTasks() {
+        if (tasks.isEmpty()) {
+            System.out.println("Your task list is empty!");
+            return;
         }
-}
-
-class Storage {
-    public static void saveTasks(ArrayList<Task> tasks, String filePath) {
-        try {
-            File file = new File(filePath);
-            if (file.getParentFile() != null) {
-                file.getParentFile().mkdirs();
-            }
-            PrintWriter writer = new PrintWriter(file);
-
-            for (Task task : tasks) {
-                writer.println(task.toFileString());
-            }
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("Something went wrong while saving tasks! " + e.getMessage());
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println((i + 1) + ". " + tasks.get(i));
         }
     }
 
-    public static void loadTasks(ArrayList<Task> tasks, String filePath) {
-        File file = new File(filePath);
-        if (!file.exists()) {
-            return; // No file to load
-        } try {
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                Task task = Task.fromFileString(line);
-                if (task != null) {
-                    tasks.add(task);
-                }
-            } scanner.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Something went wrong while loading tasks! " + e.getMessage());
+    public void markTask(int index) {
+        tasks.get(index - 1).markAsDone();
+        System.out.println("Marked as done: " + tasks.get(index - 1));
+    }
+
+    public void unmarkTask(int index) {
+        tasks.get(index - 1).markAsNotDone();
+        System.out.println("Unmarked: " + tasks.get(index - 1));
+    }
+
+    public ArrayList<Task> getTasks() {
+        return tasks;
+    }
+}
+
+// Parses user input
+class Parser {
+    public static Command parse(String input) {
+        String[] parts = input.split(" ", 2);
+        String command = parts[0];
+        String args = parts.length > 1 ? parts[1] : "";
+
+        switch (command) {
+        case "list":
+            return new ListCommand();
+        case "mark":
+            return new MarkCommand(Integer.parseInt(args));
+        case "unmark":
+            return new UnmarkCommand(Integer.parseInt(args));
+        case "todo":
+            return new AddCommand(new TodoTask(args));
+        case "deadline":
+            String[] deadlineParts = args.split(" /by ");
+            return new AddCommand(new DeadlineTask(deadlineParts[0], deadlineParts[1]));
+        case "event":
+            String[] eventParts = args.split(" /from | /to ");
+            return new AddCommand(new EventTask(eventParts[0], eventParts[1], eventParts[2]));
+        case "delete":
+            return new DeleteCommand(Integer.parseInt(args));
+        case "bye":
+            return new ExitCommand();
+        case "help":
+            return new HelpCommand();
+        default:
+            throw new IllegalArgumentException("Invalid command! Type 'help' to see available commands.");
         }
     }
 }
 
-// Base Task class
+// Abstract Command class
+abstract class Command {
+    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws IOException;
+
+    public boolean isExit() {
+        return false;
+    }
+}
+
+// Command Implementations
+class ListCommand extends Command {
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        tasks.listTasks();
+    }
+}
+
+class MarkCommand extends Command {
+    private final int index;
+
+    public MarkCommand(int index) {
+        this.index = index;
+    }
+
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        tasks.markTask(index);
+    }
+}
+
+class UnmarkCommand extends Command {
+    private final int index;
+
+    public UnmarkCommand(int index) {
+        this.index = index;
+    }
+
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        tasks.unmarkTask(index);
+    }
+}
+
+class AddCommand extends Command {
+    private final Task task;
+
+    public AddCommand(Task task) {
+        this.task = task;
+    }
+
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+        tasks.addTask(task);
+        storage.save(tasks.getTasks());
+    }
+}
+
+class DeleteCommand extends Command {
+    private final int index;
+
+    public DeleteCommand(int index) {
+        this.index = index;
+    }
+
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+        tasks.deleteTask(index);
+        storage.save(tasks.getTasks());
+    }
+}
+
+class ExitCommand extends Command {
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        ui.showGoodbye();
+    }
+
+    public boolean isExit() {
+        return true;
+    }
+}
+
+class HelpCommand extends Command {
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        System.out.println("Available commands:");
+        System.out.println("  list - Show all tasks");
+        System.out.println("  todo [task] - Add a to-do");
+        System.out.println("  deadline [task] /by [date] - Add a deadline");
+        System.out.println("  event [task] /from [start] /to [end] - Add an event");
+        System.out.println("  mark [index] - Mark task as done");
+        System.out.println("  unmark [index] - Unmark task");
+        System.out.println("  delete [index] - Delete task");
+        System.out.println("  bye - Exit program");
+    }
+}
+
+// Abstract Task class
 abstract class Task {
     protected String description;
     protected boolean isDone;
@@ -250,48 +295,46 @@ abstract class Task {
     }
 
     public void markAsDone() {
-        isDone = true;
+        this.isDone = true;
     }
 
     public void markAsNotDone() {
-        isDone = false;
+        this.isDone = false;
+    }
+
+    public String getStatusIcon() {
+        return (isDone ? "[X]" : "[ ]");
     }
 
     public abstract String toFileString();
 
-    public static Task fromFileString(String fileString) {
-        String[] parts = fileString.split(" \\| ");
-        if (parts.length < 3) return null;
-
-        boolean isDone = parts[1].equals("1");
-        String description = parts[2];
-        Task task;
-
+    public static Task fromFileString(String line) {
+        String[] parts = line.split(" \\| ");
         switch (parts[0]) {
         case "T":
-            task = new TodoTask(description);
-            break;
+            TodoTask todo = new TodoTask(parts[2]);
+            if (parts[1].equals("1")) todo.markAsDone();
+            return todo;
         case "D":
-            if (parts.length < 4) return null;
-            task = new DeadlineTask(description, parts[3]);
-            break;
+            DeadlineTask deadline = new DeadlineTask(parts[2], parts[3]);
+            if (parts[1].equals("1")) deadline.markAsDone();
+            return deadline;
         case "E":
-            if (parts.length < 5) return null;
-            task = new EventTask(description, parts[3], parts[4]);
-            break;
+            EventTask event = new EventTask(parts[2], parts[3], parts[4]);
+            if (parts[1].equals("1")) event.markAsDone();
+            return event;
         default:
-            return null;
+            throw new IllegalArgumentException("Invalid task type in file.");
         }
-        if (isDone) task.markAsDone();
-        return task;
     }
+
     @Override
     public String toString() {
-        return "[" + (isDone ? "X" : " ") + "] " + description;
+        return getStatusIcon() + " " + description;
     }
 }
 
-// Todo task
+// To-do task
 class TodoTask extends Task {
     public TodoTask(String description) {
         super(description);
@@ -301,11 +344,16 @@ class TodoTask extends Task {
     public String toFileString() {
         return "T | " + (isDone ? "1" : "0") + " | " + description;
     }
+
+    @Override
+    public String toString() {
+        return "[T] " + super.toString();
+    }
 }
 
 // Deadline task
 class DeadlineTask extends Task {
-    private final String by;
+    private String by;
 
     public DeadlineTask(String description, String by) {
         super(description);
@@ -316,11 +364,17 @@ class DeadlineTask extends Task {
     public String toFileString() {
         return "D | " + (isDone ? "1" : "0") + " | " + description + " | " + by;
     }
+
+    @Override
+    public String toString() {
+        return "[D] " + super.toString() + " (by: " + by + ")";
+    }
 }
 
 // Event task
 class EventTask extends Task {
-    private final String from, to;
+    private String from;
+    private String to;
 
     public EventTask(String description, String from, String to) {
         super(description);
@@ -332,4 +386,10 @@ class EventTask extends Task {
     public String toFileString() {
         return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + from + " | " + to;
     }
+
+    @Override
+    public String toString() {
+        return "[E] " + super.toString() + " (from: " + from + " to: " + to + ")";
+    }
 }
+
