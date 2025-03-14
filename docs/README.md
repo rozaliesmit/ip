@@ -141,7 +141,10 @@ Example: `bye`
 Example output:
 
 ```
- Bye! Hope to see you again soon. 🌸
+ Byebye! I'll be photosynthesizing in the corner but I hope to see you bloom again soon! 🌸
 ```
 
+## save and store data
+
+Tasks are saved automatically after any changes to the list. It is saved as a text file in `[JAR file location]/data/daisy.txt`.
 
