@@ -111,7 +111,7 @@ class Storage {
 
 // Manages the task list
 class TaskList {
-    private final ArrayList<Task> tasks;
+    private ArrayList<Task> tasks;
 
     public TaskList() {
         this.tasks = new ArrayList<>();
@@ -124,6 +124,20 @@ class TaskList {
     public void addTask(Task task) {
         tasks.add(task);
         System.out.println("Added: " + task);
+    }
+
+    public void findTask(String keyword) {
+        System.out.println("Here are the matching tasks in your list:");
+        int count = 0;
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).description.contains(keyword)) {
+                System.out.println((count + 1) + ". " + tasks.get(i));
+                count++;
+            }
+        }
+        if (count == 0) {
+            System.out.println("No matching tasks found.");
+        }
     }
 
     public void deleteTask(int index) {
@@ -188,6 +202,8 @@ class Parser {
             return new ExitCommand();
         case "help":
             return new HelpCommand();
+        case "find":
+            return new FindCommand(args);
         default:
             throw new IllegalArgumentException("Invalid command! Type 'help' to see available commands.");
         }
@@ -280,7 +296,26 @@ class HelpCommand extends Command {
         System.out.println("  mark [index] - Mark task as done");
         System.out.println("  unmark [index] - Unmark task");
         System.out.println("  delete [index] - Delete task");
+        System.out.println("  find [index] - Find task");
         System.out.println("  bye - Exit program");
+    }
+}
+
+class FindCommand extends Command {
+    private String keyword;
+
+    public FindCommand(String keyword) {
+        this.keyword = keyword;
+    }
+
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        tasks.findTask(keyword);
+    }
+
+    @Override
+    public boolean isExit() {
+        return false;
     }
 }
 
