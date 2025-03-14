@@ -2,12 +2,18 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// Main class
+// Main Daisy class
 public class Daisy {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
 
+    /**
+     * Constructor for Daisy
+     * Initializes the user interface (Ui), storage (Storage) and loads saved tasks
+     *
+     * @param filePath the file path to load and save tasks.
+     */
     public Daisy(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -19,6 +25,9 @@ public class Daisy {
         }
     }
 
+    /**
+     * Displays the welcome message and handles user input until the user chooses to exit ("bye")
+     */
     public void run() {
         ui.showWelcome();
         boolean isExit = false;
@@ -42,14 +51,20 @@ public class Daisy {
     }
 }
 
-// User interface handler
+// Ui for dealing with user input and output
 class Ui {
     private final Scanner scanner;
 
+    /**
+     * Initializes the scanner for reading user input
+     */
     public Ui() {
         scanner = new Scanner(System.in);
     }
 
+    /**
+     * Displays the welcome message
+     */
     public void showWelcome() {
         System.out.println("____________________________________________________________");
         System.out.println(" Hello! I'm Daisy 🌼");
@@ -58,6 +73,9 @@ class Ui {
         System.out.println("____________________________________________________________");
     }
 
+    /**
+     * Displays the goodbye message
+     */
     public void showGoodbye() {
         System.out.println(" Bye! Hope to see you again soon. 🌸");
     }
@@ -70,16 +88,23 @@ class Ui {
         System.out.println("____________________________________________________________");
     }
 
+    /**
+     * Displays an error message when loading tasks doesn't work
+     */
     public void showLoadingError() {
         System.out.println("Error loading saved tasks.");
     }
 
+    /**
+     * Displays an error message
+     *
+     * @param message the error message to display
+     */
     public void showError(String message) {
         System.out.println("Error: " + message);
     }
 }
 
-// Handles storage operations
 class Storage {
     private final String filePath;
 
@@ -87,6 +112,12 @@ class Storage {
         this.filePath = filePath;
     }
 
+    /**
+     * Loads tasks from the storage file
+     *
+     * @return list of tasks from the storage file
+     * @throws IOException if an I/O error occurs
+     */
     public ArrayList<Task> load() throws IOException {
         ArrayList<Task> tasks = new ArrayList<>();
         File file = new File(filePath);
@@ -100,6 +131,12 @@ class Storage {
         return tasks;
     }
 
+    /**
+     * Saves the tasks to the storage file
+     *
+     * @param tasks the list of tasks to save
+     * @throws IOException if an I/O error occurs
+     */
     public void save(ArrayList<Task> tasks) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Task task : tasks) {
@@ -109,7 +146,7 @@ class Storage {
     }
 }
 
-// Manages the task list
+// Manages the task list, including adding, deleting, marking, and listing tasks
 class TaskList {
     private ArrayList<Task> tasks;
 
@@ -121,11 +158,21 @@ class TaskList {
         this.tasks = tasks;
     }
 
+    /**
+     * Adds a task to the task list
+     *
+     * @param task the task to add
+     */
     public void addTask(Task task) {
         tasks.add(task);
         System.out.println("Added: " + task);
     }
 
+    /**
+     * Finds and displays tasks that match the provided keyword
+     *
+     * @param keyword the keyword to search for in tasks
+     */
     public void findTask(String keyword) {
         System.out.println("Here are the matching tasks in your list:");
         int count = 0;
@@ -174,7 +221,7 @@ class TaskList {
     }
 }
 
-// Parses user input
+// Parses ui and returns command
 class Parser {
     public static Command parse(String input) {
         String[] parts = input.split(" ", 2);
@@ -210,8 +257,15 @@ class Parser {
     }
 }
 
-// Abstract Command class
 abstract class Command {
+    /**
+     * Excecutes the command
+     *
+     * @param tasks the task list
+     * @param ui the user interface
+     * @param storage the storage to save the tasks
+     * @throws IOException if an error occurs during I/O operations
+     */
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws IOException;
 
     public boolean isExit() {
@@ -219,7 +273,6 @@ abstract class Command {
     }
 }
 
-// Command Implementations
 class ListCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         tasks.listTasks();
@@ -319,7 +372,6 @@ class FindCommand extends Command {
     }
 }
 
-// Abstract Task class
 abstract class Task {
     protected String description;
     protected boolean isDone;
@@ -337,12 +389,23 @@ abstract class Task {
         this.isDone = false;
     }
 
+    /**
+     * Returns the status of the task
+     *
+     * @return "[X]" if done, "[ ]" if not done
+     */
     public String getStatusIcon() {
         return (isDone ? "[X]" : "[ ]");
     }
 
+    /**
+     * Saving the task to a file
+     */
     public abstract String toFileString();
 
+    /**
+     * Creating a task from a file.
+     */
     public static Task fromFileString(String line) {
         String[] parts = line.split(" \\| ");
         switch (parts[0]) {
@@ -369,7 +432,6 @@ abstract class Task {
     }
 }
 
-// To-do task
 class TodoTask extends Task {
     public TodoTask(String description) {
         super(description);
@@ -386,7 +448,6 @@ class TodoTask extends Task {
     }
 }
 
-// Deadline task
 class DeadlineTask extends Task {
     private String by;
 
@@ -406,7 +467,6 @@ class DeadlineTask extends Task {
     }
 }
 
-// Event task
 class EventTask extends Task {
     private String from;
     private String to;
@@ -427,4 +487,3 @@ class EventTask extends Task {
         return "[E] " + super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
-
